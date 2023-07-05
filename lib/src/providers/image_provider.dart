@@ -90,6 +90,7 @@ class FMTCImageProvider extends ImageProvider<FMTCImageProvider> {
       String? throwError,
       FMTCBrowsingErrorType? throwErrorType,
       bool? cacheHit,
+      bool? ignoreError,
     }) async {
       scheduleMicrotask(() => PaintingBinding.instance.imageCache.evict(key));
       unawaited(chunkEvents.close());
@@ -101,6 +102,12 @@ class FMTCImageProvider extends ImageProvider<FMTCImageProvider> {
 
         final error = FMTCBrowsingError(throwError, throwErrorType!);
         provider.settings.errorHandler?.call(error);
+
+        if (ignoreError != null && ignoreError) {
+          return decode(
+            await ImmutableBuffer.fromUint8List(Uint8List.fromList([])),
+          );
+        }
         throw error;
       }
 
@@ -157,6 +164,7 @@ class FMTCImageProvider extends ImageProvider<FMTCImageProvider> {
               : null,
           throwErrorType: FMTCBrowsingErrorType.noConnectionDuringFetch,
           cacheHit: false,
+          ignoreError: true,
         );
       }
 
@@ -168,6 +176,7 @@ class FMTCImageProvider extends ImageProvider<FMTCImageProvider> {
               : null,
           throwErrorType: FMTCBrowsingErrorType.negativeFetchResponse,
           cacheHit: false,
+          ignoreError: true,
         );
       }
 
